@@ -3,7 +3,7 @@
 ## MP4 : description du format de fichier
 
 La structure d'un fichier se caractérise par une organisation sous forme d'objets.  
-Une description utile : [A Quick Dive Into MP4](https://github.com/alfg/quick-dive-into-mp4).  
+Une introduction claire : [A Quick Dive Into MP4](https://github.com/alfg/quick-dive-into-mp4).  
 
 Le header d'une boîte est constitué ainsi :  
 taille (4 octets), type (4 octets)  
@@ -16,6 +16,7 @@ La taille obtenue dans l'entête suit les règles suivantes :
     
 ### ftyp (file type box)
 
+|---------------|--------------------------------------------------|
 | Type de boîte | `moov`                                           |
 | Contenant     | Fichier                                          |
 | Obigatoire    | Oui                                              |
