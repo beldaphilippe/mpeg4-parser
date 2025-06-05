@@ -16,13 +16,12 @@ La taille obtenue dans l'entête suit les règles suivantes :
     
 ### ftyp (file type box)
 
-|---------------|--------------------------------------------------|
 | Type de boîte | `moov`                                           |
+|---------------|--------------------------------------------------|
 | Contenant     | Fichier                                          |
 | Obigatoire    | Oui                                              |
 | Quantité      | Unique                                           |
 | Description   | Contient des informations sur le fichier stocké. |
-
 
 | Champs            | Taille (octets) | Description                                                     |
 |:------------------|:----------------|:----------------------------------------------------------------|
@@ -30,33 +29,57 @@ La taille obtenue dans l'entête suit les règles suivantes :
 | minor_version     | 4               | version mineure du type majeur (informatif seulement)           |
 | compatible_brands | 4 x N           | liste des types compatibles, s'étend jusqu'à la fin de la boîte |
 
-### mdat
 
-"media data box" : Contient les données multimédia, commes les images vidéo.  
+### mdat (media data box)
+
+| Type de boîte | `mdat`                                                    |
+|---------------|-----------------------------------------------------------|
+| Contenant     | Fichier                                                   |
+| Obigatoire    | Non                                                       |
+| Quantité      | Zéro ou plus                                              |
+| Description   | Contient les données multimédia, commes les images vidéo. |
 
 | Champs | Taille (octets) | Description                                            |
 |:-------|:----------------|:-------------------------------------------------------|
 | data   | N               | données multimédia, s'étend jusqu'à la fin de la boîte |
 
+
 ### free | skip
 
-Contenu non pertinent, pouvant être ignoré ou supprimé (attention aux offsets)
+| Type de boîte | `free` ou `skip`                                                               |
+|---------------|--------------------------------------------------------------------------------|
+| Contenant     | Fichier ou autre boîte                                                         |
+| Obigatoire    | Non                                                                            |
+| Quantité      | Zéro ou plus                                                                   |
+| Description   | Contenu non pertinent, pouvant être ignoré ou supprimé (attention aux offsets) |
 
 | Champs | Taille (octets) | Description                        |
 |:-------|:----------------|:-----------------------------------|
 | data   | N               | s'étend jusqu'à la fin de la boîte |
 
-### pdin
 
+### pdin (progressive download information box)
 
-
-"progressive download information box" : Contient des paires de nombres représentant des associations de bitrate de téléchargement de fichier (octets/s) et de délai initial de playback (ms).  
+| Type de boîte | `pdin`                                                                                                                                                |
+|---------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Contenant     | Fichier                                                                                                                                               |
+| Obigatoire    | Non                                                                                                                                                   |
+| Quantité      | Zéro ou un                                                                                                                                            |
+| Description   | Contient des paires de nombres représentant des associations de bitrate de téléchargement de fichier (octets/s) et de délai initial de playback (ms). |
+|               |                                                                                                                                                       |
 
 | Champs        | Taille (octets) | Description                           |
 |:--------------|:----------------|:--------------------------------------|
 | rate          | 4               | vitesse de téléchargement en octets/s |
 | initial_delay | 4               | délai initial de lecture              |
 
-### moov
 
-"movie box" : Obligatoire et unique,
+### moov (movie box)
+
+| Type de boîte | `moov`                                                                         |
+|---------------|--------------------------------------------------------------------------------|
+| Contenant     | Fichier ou autre boîte                                                         |
+| Obigatoire    | Oui                                                                            |
+| Quantité      | Unique                                                                         |
+| Description   | Contenu non pertinent, pouvant être ignoré ou supprimé (attention aux offsets) |
+
