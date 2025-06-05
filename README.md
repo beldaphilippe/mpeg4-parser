@@ -10,18 +10,23 @@ taille (4 octets), type (4 octets)
 Puis suivent les données de la boîte.  
 
 La taille obtenue dans l'entête suit les règles suivantes :  
-    * la taille est la taille de la boîte en entier, en englobant l'entête complet et tous les champs ou boîtes contenus dans la boîte courante.  
-    * si elle vaut 0, la boîte courante est la dernière du fichier et son contenu s'étant jusqu'à la fin du fichier.  
-    * si elle vaut 1, la taille est contenue dans le champ `largesize` de la boîte.  
-    
+* la taille est la taille de la boîte en entier, en englobant l'entête complet et tous les champs ou boîtes contenus dans la boîte courante.  
+* si elle vaut 0, la boîte courante est la dernière du fichier et son contenu s'étant jusqu'à la fin du fichier.  
+* si elle vaut 1, la taille est contenue dans le champ `largesize` de la boîte.  
+
+
+Pour les différents types de boîtes, se référer à la section 8 du standard [ISO/IEC 14496 partie 12](https://github.com/beldaphilippe/mpeg4-decoder/blob/main/doc/ISOIEC_14496-12:2015_base_media_file_format.pdf).  
+
+
 ### ftyp (file type box)
 
-| Type de boîte | `moov`                                           |
-|---------------|--------------------------------------------------|
-| Contenant     | Fichier                                          |
-| Obigatoire    | Oui                                              |
-| Quantité      | Unique                                           |
-| Description   | Contient des informations sur le fichier stocké. |
+| Type de boîte | `ftyp`  |
+|:--------------|:--------|
+| Contenant     | Fichier |
+| Obligatoire   | Oui     |
+| Quantité      | Unique  |
+
+Description : Contient des informations sur le fichier stocké.  
 
 | Champs            | Taille (octets) | Description                                                     |
 |:------------------|:----------------|:----------------------------------------------------------------|
@@ -32,12 +37,13 @@ La taille obtenue dans l'entête suit les règles suivantes :
 
 ### mdat (media data box)
 
-| Type de boîte | `mdat`                                                    |
-|---------------|-----------------------------------------------------------|
-| Contenant     | Fichier                                                   |
-| Obigatoire    | Non                                                       |
-| Quantité      | Zéro ou plus                                              |
-| Description   | Contient les données multimédia, commes les images vidéo. |
+| Type de boîte | `mdat`       |
+|:--------------|:-------------|
+| Contenant     | Fichier      |
+| Obligatoire   | Non          |
+| Quantité      | Zéro ou plus |
+
+Description : Contient les données multimédia, commes les images vidéo.  
 
 | Champs | Taille (octets) | Description                                            |
 |:-------|:----------------|:-------------------------------------------------------|
@@ -46,12 +52,13 @@ La taille obtenue dans l'entête suit les règles suivantes :
 
 ### free | skip
 
-| Type de boîte | `free` ou `skip`                                                               |
-|---------------|--------------------------------------------------------------------------------|
-| Contenant     | Fichier ou autre boîte                                                         |
-| Obigatoire    | Non                                                                            |
-| Quantité      | Zéro ou plus                                                                   |
-| Description   | Contenu non pertinent, pouvant être ignoré ou supprimé (attention aux offsets) |
+| Type de boîte | `free` ou `skip`       |
+|:--------------|:-----------------------|
+| Contenant     | Fichier ou autre boîte |
+| Obligatoire   | Non                    |
+| Quantité      | Zéro ou plus           |
+
+Description : Contenu non pertinent, pouvant être ignoré ou supprimé (attention aux offsets).  
 
 | Champs | Taille (octets) | Description                        |
 |:-------|:----------------|:-----------------------------------|
@@ -60,13 +67,13 @@ La taille obtenue dans l'entête suit les règles suivantes :
 
 ### pdin (progressive download information box)
 
-| Type de boîte | `pdin`                                                                                                                                                |
-|---------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Contenant     | Fichier                                                                                                                                               |
-| Obigatoire    | Non                                                                                                                                                   |
-| Quantité      | Zéro ou un                                                                                                                                            |
-| Description   | Contient des paires de nombres représentant des associations de bitrate de téléchargement de fichier (octets/s) et de délai initial de playback (ms). |
-|               |                                                                                                                                                       |
+| Type de boîte | `pdin`     |
+|:--------------|:-----------|
+| Contenant     | Fichier    |
+| Obligatoire   | Non        |
+| Quantité      | Zéro ou un |
+
+Description : Contient des paires de nombres représentant des associations de bitrate de téléchargement de fichier (octets/s) et de délai initial de playback (ms).  
 
 | Champs        | Taille (octets) | Description                           |
 |:--------------|:----------------|:--------------------------------------|
@@ -76,10 +83,18 @@ La taille obtenue dans l'entête suit les règles suivantes :
 
 ### moov (movie box)
 
-| Type de boîte | `moov`                                                                         |
-|---------------|--------------------------------------------------------------------------------|
-| Contenant     | Fichier ou autre boîte                                                         |
-| Obigatoire    | Oui                                                                            |
-| Quantité      | Unique                                                                         |
-| Description   | Contenu non pertinent, pouvant être ignoré ou supprimé (attention aux offsets) |
+| Type de boîte | `moov`  |
+|:--------------|:--------|
+| Contenant     | Fichier |
+| Obligatoire   | Oui     |
+| Quantité      | Unique  |
 
+Description : Est placée directement dans le fichier et contient les métadonnées (voir les boîtes suivantes).  
+
+### mvhd (movie header box)
+
+| Type de boîte | `mvhd` |
+|:--------------|:-------|
+| Contenant     | `moov` |
+| Obligatoire   | Oui    |
+| Quantité      | Unique |
