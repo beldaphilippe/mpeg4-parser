@@ -6,13 +6,13 @@ La structure d'un fichier se caractérise par une organisation sous forme d'obje
 Une introduction claire : [A Quick Dive Into MP4](https://github.com/alfg/quick-dive-into-mp4).  
 
 Le header d'une boîte est constitué ainsi :  
-taille (4 octets), type (4 octets)  
+size (4 octets), type (4 octets), largesize (optionnel, cf paragraphe suivant; 8 octets)  
 Puis suivent les données de la boîte.  
 
 La taille obtenue dans l'entête suit les règles suivantes :  
 * la taille est la taille de la boîte en entier, en englobant l'entête complet et tous les champs ou boîtes contenus dans la boîte courante.  
 * si elle vaut 0, la boîte courante est la dernière du fichier et son contenu s'étant jusqu'à la fin du fichier.  
-* si elle vaut 1, la taille est contenue dans le champ `largesize` de la boîte.  
+* si elle vaut 1, la taille est contenue dans le champ `largesize` de la boîte. Ce champ se trouve alors rajouté à l'entête de la boîte, contenu sur 8 octets.  
 
 
 Pour les différents types de boîtes, se référer à la section 8 du standard [ISO/IEC 14496 partie 12](https://github.com/beldaphilippe/mpeg4-decoder/blob/main/doc/ISOIEC_14496-12:2015_base_media_file_format.pdf).  
