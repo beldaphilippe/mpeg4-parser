@@ -98,3 +98,7 @@ Description : Est placée directement dans le fichier et contient les métadonn�
 | Contenant     | `moov` |
 | Obligatoire   | Oui    |
 | Quantité      | Unique |
+
+# Progression
+
+debut : environ 1 Juin
