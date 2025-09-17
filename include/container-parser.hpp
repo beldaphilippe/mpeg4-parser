@@ -9,40 +9,9 @@
 #include <iostream>
 
 
-// Ensemble des types de boite disponibles
-enum class BoxType {
-    Unknown,
-    Root,
-    Ftyp,
-    Mdat,
-    Free,
-    Pdin,
-    Moov,
-    Mvhd,
-    Trak,
-    Tkhd,
-    Edts,
-    Elst,
-    Mdia,
-    Mdhd,
-    Hdlr,
-    Minf,
-    Vmhd,
-    Dinf,
-    Url,
-    Urn,
-    Dref,
-    Stbl,
-    Btrt,
-    Stsd,
-    
-    Meta
-};
-
-// Classe abstraite de base pour tous les types de boîtes
 class Box {
 public:
-    BoxType  type = BoxType::Unknown;
+    std::array<char, 4>  type = {'u', 'n', 'k', 'n'};
     uint64_t size = 0; // Choix de renseigner une taille unique sur 8 octets (pas de largesize)
     
     Box(const Box&) = delete;                // no copy
@@ -69,7 +38,7 @@ public:
     
     // Affiche les informations de la boite
     //     @outstream: flux d'affichage
-    virtual void print(std::ostream& a_outstream);
+    void print(std::ostream& a_outstream);
 
 protected:
     uint8_t m_parse_offset = 0; // offset à appliquer pour le parsing, après tous les entêtes des classes héritées
@@ -85,8 +54,8 @@ protected:
     // L'implementation de cette fonction sert de base pour les classes derivees.
     //     @pParent: pointeur vers la boîte candidat parent
     //     @expectedParentType: le type attendu du parent, à renseigner dans chaque sous-classe
-    void setParent(Box *a_pParent, BoxType a_expectedParentType);
-    void setParent(Box *a_pParent, std::vector<BoxType> a_expectedParentType);
+    void setParent(Box *a_pParent, std::array<char, 4> a_expectedParentType);
+    void setParent(Box *a_pParent, std::vector<std::array<char, 4>> a_expectedParentType);
 };
 
 // Classe de base etendue
@@ -101,7 +70,7 @@ public:
         flags[2] = a_flags[2];
     }
 
-    virtual void print(std::ostream& a_outstream) override;
+    void print(std::ostream& a_outstream);
     virtual void parse(std::ifstream& a_file) override;
 };
 
@@ -109,7 +78,7 @@ public:
 class Root final : public Box {
 public:
     Root() {
-        type = BoxType::Root;
+        type = {'r', 'o', 'o', 't'};
     }
     
     void setParent(Box *pParent) override final;
@@ -126,11 +95,11 @@ public:
     std::vector<std::array<char, 4>> compatible_brands;
 
     Ftyp() {
-        type = BoxType::Ftyp;
+        type = {'f', 't', 'y', 'p'};
     }
     
     void setParent(Box *a_parent) override final;
-    void print(std::ostream& a_outstream) override final;
+    void print(std::ostream& a_outstream);
     
     // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
     //     @file: le bitstream du fichier analysé
@@ -142,11 +111,11 @@ public:
     uint64_t beg_data; // index de début des données images/audio dans le bitstream
 
     Mdat() {
-        type = BoxType::Mdat;
+        type = {'m', 'd', 'a', 't'};
     }
     
     void setParent(Box *pParent) override final;
-    void print(std::ostream& a_outstream) override final;
+    void print(std::ostream& a_outstream);
     
     // Parse la boîte : avance le bitstream jusqu'à la prochaine boîte et stocke
     // le début des données. La fin de la boîte est connue grâce à sa taille.
@@ -158,7 +127,7 @@ public:
 class Free final : public Box {
 public:
     Free() {
-        type = BoxType::Free;
+        type = {'f', 'r', 'e', 'e'};
     }
     
     void setParent(Box *pParent) override final;
@@ -173,11 +142,11 @@ public:
     std::vector<uint32_t> initial_delay;
 
     Pdin() {
-        type = BoxType::Pdin;
+        type = {'p', 'd', 'i', 'n'};
     }
     
     void setParent(Box *pParent) override final;
-    void print(std::ostream& a_outstream) override final;
+    void print(std::ostream& a_outstream);
     
     // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
     //     @file: le bitstream du fichier analysé
@@ -187,7 +156,7 @@ public:
 class Moov final : public Box {
 public:
     Moov() {
-        type = BoxType::Moov;
+        type = {'m', 'o', 'o', 'v'};
     }
     
     void setParent(Box *a_pParent) override final;
@@ -201,7 +170,7 @@ public:
 class Mvhd final : public FullBox {
 public:
     Mvhd() {
-        type = BoxType::Mvhd;
+        type = {'m', 'v', 'h', 'd'};
         flags = {0, 0, 0};
     }
     
@@ -216,7 +185,7 @@ public:
     uint32_t next_track_ID;
 
     void setParent(Box *pParent) override final;
-    void print(std::ostream& a_outstream) override final;
+    void print(std::ostream& a_outstream);
     
     // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
     //     @file: le bitstream du fichier analysé
@@ -226,7 +195,7 @@ public:
 class Trak final : public Box {
 public:
     Trak() {
-        type = BoxType::Trak;
+        type = {'t', 'r', 'a', 'k'};
     }
     
     void setParent(Box *pParent) override final;
@@ -240,7 +209,7 @@ public:
 class Tkhd final : public FullBox {
 public:
     Tkhd() {
-        type = BoxType::Tkhd;
+        type = {'t', 'k', 'h', 'd'};
     }
     
     // On utilise des uint64 peu importe la version
@@ -256,7 +225,7 @@ public:
     uint32_t height;
 
     void setParent(Box *pParent) override final;
-    void print(std::ostream& a_outfile) override final;
+    void print(std::ostream& a_outfile);
 
     // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
     //     @file: le bitstream du fichier analysé
@@ -266,7 +235,7 @@ public:
 class Edts final : public Box {
 public:
     Edts() {
-        type = BoxType::Edts;
+        type = {'e', 'd', 't', 's'};
     }
     
     void setParent(Box *pParent) override final;
@@ -280,7 +249,7 @@ public:
 class Elst final : public FullBox {
 public:
     Elst() {
-        type = BoxType::Elst;
+        type = {'e', 'l', 's', 't'};
     }
 
     uint32_t entry_count;
@@ -290,7 +259,7 @@ public:
     std::vector<int16_t> media_rate_fraction;
     
     void setParent(Box *pParent) override final;
-    void print(std::ostream& a_outstream) override final;
+    void print(std::ostream& a_outstream);
     
     // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
     //     @file: le bitstream du fichier analysé
@@ -301,7 +270,7 @@ public:
 class Mdia final : public Box {
 public:
     Mdia() {
-        type = BoxType::Mdia;
+        type = {'m', 'd', 'i', 'a'};
     }
     
     void setParent(Box *pParent) override final;
@@ -315,7 +284,7 @@ public:
 class Mdhd final : public FullBox {
 public:
     Mdhd() {
-        type = BoxType::Mdhd;
+        type = {'m', 'd', 'h', 'd'};
     }
 
     uint64_t creation_time;
@@ -325,7 +294,7 @@ public:
     uint16_t language; // (5 bin)[3], le premier? bit est inutilisé
     
     void setParent(Box *pParent) override final;
-    void print(std::ostream& a_outstream) override final;
+    void print(std::ostream& a_outstream);
     
     // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
     //     @file: le bitstream du fichier analysé
@@ -335,14 +304,14 @@ public:
 class Hdlr final : public FullBox {
 public:
     Hdlr() {
-        type = BoxType::Hdlr;
+        type = {'h', 'd', 'l', 'r'};
     }
 
     uint32_t handler_type;
     std::string name;
     
     void setParent(Box *pParent) override final;
-    void print(std::ostream& a_outstream) override final;
+    void print(std::ostream& a_outstream);
     
     // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
     //     @file: le bitstream du fichier analysé
@@ -352,7 +321,7 @@ public:
 class Minf final : public Box {
 public:
     Minf() {
-        type = BoxType::Minf;
+        type = {'m', 'i', 'n', 'f'};
     }
     
     void setParent(Box *pParent) override final;
@@ -366,7 +335,7 @@ public:
 class Vmhd final : public FullBox {
 public:
     Vmhd() {
-        type = BoxType::Vmhd;
+        type = {'v', 'm', 'h', 'd'};
         version = 1;
         flags[0] = 1;
     }
@@ -375,7 +344,7 @@ public:
     std::array<uint16_t, 3> opcolor = {0, 0, 0};
     
     void setParent(Box *pParent) override final;
-    void print(std::ostream& a_outstream) override final;
+    void print(std::ostream& a_outstream);
     
     // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
     //     @file: le bitstream du fichier analysé
@@ -386,7 +355,7 @@ public:
 class Dinf final : public Box {
 public:
     Dinf() {
-        type = BoxType::Dinf;
+        type = {'d', 'i', 'n', 'f'};
     }
     
     void setParent(Box *pParent) override final;
@@ -399,14 +368,14 @@ public:
 class Url final : public FullBox {
 public:
     Url() {
-        type = BoxType::Url;
+        type = {'u', 'r', 'l', ' '};
         version = 0;
     }
 
     std::string location;
     
     void setParent(Box *pParent) override final;
-    void print(std::ostream& a_outstream) override final;
+    void print(std::ostream& a_outstream);
     
     // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
     //     @file: le bitstream du fichier analysé
@@ -416,7 +385,7 @@ public:
 class Urn final : public FullBox {
 public:
     Urn() {
-        type = BoxType::Urn;
+        type = {'u', 'r', 'n', ' '};
         version = 0;
     }
 
@@ -424,7 +393,7 @@ public:
     std::string location;
     
     void setParent(Box *pParent) override final;
-    void print(std::ostream& a_outstream) override final;
+    void print(std::ostream& a_outstream);
     
     // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
     //     @file: le bitstream du fichier analysé
@@ -434,7 +403,7 @@ public:
 class Dref final : public FullBox {
 public:
     Dref() {
-        type = BoxType::Dref;
+        type = {'d', 'r', 'e', 'f'};
         version = 0;
         flags = {0,0,0};
     }
@@ -443,7 +412,7 @@ public:
     // data_entry est ici remplacée par `children`
     
     void setParent(Box *pParent) override final;
-    void print(std::ostream& a_outstream) override final;
+    void print(std::ostream& a_outstream);
     
     // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
     //     @file: le bitstream du fichier analysé
@@ -453,7 +422,7 @@ public:
 class Stbl final : public Box {
 public:
     Stbl() {
-        type = BoxType::Stbl;
+        type = {'s', 't', 'b', 'l'};
     }
     
     void setParent(Box *pParent) override final;
@@ -467,9 +436,7 @@ class SampleEntry : public Box {
 public:
     uint16_t data_reference_index;
     
-    void setParent(Box *pParent) override final;
-    void print(std::ostream& a_outstream) override;
-    
+    void print(std::ostream& a_outstream);
     virtual void parse(std::ifstream& a_file) override;
 };
 
@@ -480,11 +447,11 @@ public:
     uint32_t avgBitrate;
     
     Btrt() {
-        type = BoxType::Btrt;
+        type = {'b', 't', 'r', 't'};
     }
     
     void setParent(Box *pParent) override final;
-    void print(std::ostream& a_outstream) override;
+    void print(std::ostream& a_outstream);
     
     // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
     //     @file: le bitstream du fichier analysé
@@ -497,30 +464,275 @@ public:
     // toutes les instances sont stockées dans `children`
 
     Stsd() {
-        type = BoxType::Stsd;
+        type = {'s', 't', 's', 'd'};
         flags = {0, 0, 0};
     }
     
     void setParent(Box *pParent) override final;
-    void print(std::ostream& a_outstream) override;
+    void print(std::ostream& a_outstream);
     
     // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
     //     @file: le bitstream du fichier analysé
     virtual void parse(std::ifstream& a_file) override;
 };
 
-class Meta : public FullBox {
+class Meta final : public FullBox {
 public:
     Meta() {
-        type = BoxType::Meta;
+        type = {'m', 'e', 't', 'a'};
     }
     
     void setParent(Box *pParent) override final;
     void parse(std::ifstream& a_file) override final;
 };
 
+class Frma final : public Box {
+public:
+    std::array<char, 4> data_format;
+    
+    Frma() {
+        type = {'f', 'r', 'm', 'a'};
+    }
+    
+    void setParent(Box *pParent) override final;
+    void print(std::ostream& a_outstream);
+    void parse(std::ifstream& a_file) override final;
+    
+private:
+    uint64_t m_beg_data;
+};
 
-class Udta : public Box {}; 
+class Cinf final : public Box {
+public:
+    // stocké dans m_children
+    // OriginalFormatBox(fmt);
+    // avcC config;
+
+    Cinf() {
+        type = {'c', 'i', 'n', 'f'};
+    }
+    
+    void setParent(Box *pParent) override final;
+    void parse(std::ifstream& a_file) override final;
+};
+
+class Avcc final : public Box {
+public:
+    uint64_t beg_data; // index de début des données images/audio dans le bitstream
+
+    Avcc() {
+        type = {'a', 'v', 'c', 'c'};
+    }
+    
+    void setParent(Box *pParent) override final;
+    
+    // Parse la boîte : avance le bitstream jusqu'à la prochaine boîte et stocke
+    // le début des données. La fin de la boîte est connue grâce à sa taille.
+    //     @file: le bitstream du fichier analysé
+    void parse(std::ifstream& a_file) override final;
+};
+
+class VisualSampleEntry : public SampleEntry {
+public:
+    uint16_t width;
+    uint16_t height;
+    uint32_t horizresolution = 0x00480000; // 72 dpi
+    uint32_t vertresolution  = 0x00480000; // 72 dpi
+    uint16_t frame_count = 1;
+    std::string compressorname = std::string(32, '\0');
+    uint16_t depth = 0x0018;
+    // optionnel, contenu dans les enfants
+    // CleanApertureBox clap;
+    // PixelAspectRatioBox pasp;
+    
+    void print(std::ostream& a_outstream);
+    virtual void parse(std::ifstream& a_file) override;
+};
+
+class Icpv final : public VisualSampleEntry {
+public:
+    // dans les enfants
+    // CompleteTrackInfoBox();
+    // AVCConfigurationBox config;
+    // MPEG4BitRateBox (); // optional
+    // MPEG4ExtensionDescriptorsBox (); // optional
+    
+    std::array<char, 4> transformed_type; // pas à parser, info a transmettre a un enfant
+    
+    Icpv() {
+        type = {'i', 'c', 'p', 'v'};
+    }
+    
+    void setParent(Box *pParent) override final;
+    void print(std::ostream& a_outstream);
+    
+    // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
+    //     @file: le bitstream du fichier analysé
+    void parse(std::ifstream& a_file) override final;
+};
+
+class Stts final : public FullBox {
+public:
+    uint32_t entry_count;
+    std::vector<uint32_t> sample_count;
+    std::vector<uint32_t> sample_delta;
+    
+    Stts() {
+        type = {'s', 't', 't', 's'};
+        version = 0;
+        setFlags({0, 0, 0});
+    }
+    
+    void setParent(Box *pParent) override final;
+    void print(std::ostream& a_outstream);
+
+    // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
+    //     @file: le bitstream du fichier analysé
+    void parse(std::ifstream& a_file) override final;
+};
+
+class Stss final : public FullBox {
+public:
+    uint32_t entry_count;
+    std::vector<uint32_t> sample_number;
+    
+    Stss() {
+        type = {'s', 't', 's', 's'};
+        version = 0;
+        setFlags({0, 0, 0});
+    }
+    
+    void setParent(Box *pParent) override final;
+    void print(std::ostream& a_outstream);
+
+    // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
+    //     @file: le bitstream du fichier analysé
+    void parse(std::ifstream& a_file) override final;
+};
+
+class Stsc final : public FullBox {
+public:
+    uint32_t entry_count;
+    std::vector<uint32_t> first_chunk;
+    std::vector<uint32_t> samples_per_chunk;
+    std::vector<uint32_t> samples_description_index;
+    
+    Stsc() {
+        type = {'s', 't', 's', 'c'};
+        version = 0;
+        setFlags({0, 0, 0});
+    }
+    
+    void setParent(Box *pParent) override final;
+    void print(std::ostream& a_outstream);
+
+    // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
+    //     @file: le bitstream du fichier analysé
+    void parse(std::ifstream& a_file) override final;
+};
+
+class Stsz final : public FullBox {
+public:
+    uint32_t sample_size;
+    uint32_t sample_count;
+    std::vector<uint32_t> entry_size;
+    
+    Stsz() {
+        type = {'s', 't', 's', 'z'};
+        version = 0;
+        setFlags({0, 0, 0});
+    }
+    
+    void setParent(Box *pParent) override final;
+    void print(std::ostream& a_outstream);
+
+    // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
+    //     @file: le bitstream du fichier analysé
+    void parse(std::ifstream& a_file) override final;
+};
+
+class Stco final : public FullBox {
+public:
+    uint32_t entry_count;
+    std::vector<uint32_t> chunk_offset;
+    
+    Stco() {
+        type = {'s', 't', 'c', 'o'};
+        version = 0;
+        setFlags({0, 0, 0});
+    }
+    
+    void setParent(Box *pParent) override final;
+    void print(std::ostream& a_outstream);
+
+    // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
+    //     @file: le bitstream du fichier analysé
+    void parse(std::ifstream& a_file) override final;
+};
+
+class Smhd final : public FullBox {
+public:
+    int16_t balance = 0;
+    
+    Smhd() {
+        type = {'s', 'm', 'h', 'd'};
+        version = 0;
+        setFlags({0, 0, 0});
+    }
+    
+    void setParent(Box *pParent) override final;
+    void print(std::ostream& a_outstream);
+
+    // Parse la boîte actuelle et avance le bitstream jusqu'à la prochaine boîte.
+    //     @file: le bitstream du fichier analysé
+    void parse(std::ifstream& a_file) override final;
+};
+
+class Enca final : public Box {
+public:
+    uint64_t beg_data; // index de début des données images/audio dans le bitstream
+
+    Enca() {
+        type = {'e', 'n', 'c', 'a'};
+    }
+    
+    void setParent(Box *pParent) override final;
+    
+    // Parse la boîte : avance le bitstream jusqu'à la prochaine boîte et stocke
+    // le début des données. La fin de la boîte est connue grâce à sa taille.
+    //     @file: le bitstream du fichier analysé
+    void parse(std::ifstream& a_file) override final;
+};
+
+class Udta final : public Box {
+public:
+    Udta() {
+        type = {'u', 'd', 't', 'a'};
+    }
+    
+    void setParent(Box *a_pParent) override final;
+    
+    // Avance le bitstream jusqu'à la prochaine boite de même niveau en parsant toutes les boîtes contenues.
+    //     @file: le bitstream du fichier analysé
+    void parse(std::ifstream& a_file) override final;
+};
+
+class Ilst final : public Box {
+public:
+    uint64_t beg_data; // index de début des données images/audio dans le bitstream
+
+    Ilst() {
+        type = {'i', 'l', 's', 't'};
+    }
+    
+    void setParent(Box *pParent) override final;
+    
+    // Parse la boîte : avance le bitstream jusqu'à la prochaine boîte et stocke
+    // le début des données. La fin de la boîte est connue grâce à sa taille.
+    //     @file: le bitstream du fichier analysé
+    void parse(std::ifstream& a_file) override final;
+};
+
 
 class Iods : public Box {
 public:
@@ -531,48 +743,6 @@ class Moof : public Box {};
 
 class Mfra : public Box {}; 
 
-class Stts : public Box {
-public:
-    uint32_t entry_count;
-    std::vector<uint32_t> sample_count;
-    std::vector<uint32_t> sample_delta;
-};
-
-class Stsc : public Box {
-public:
-    uint32_t entry_count;
-    uint32_t *first_chunk;
-    uint32_t *samples_per_chunk;
-    uint32_t *samples_description_index;
-
-    void setVars(uint32_t fc[], uint32_t spc[], uint32_t sdi[]) {
-        first_chunk               = new uint32_t[entry_count];
-        samples_per_chunk         = new uint32_t[entry_count];
-        samples_description_index = new uint32_t[entry_count];
-        for (uint32_t i=0; i<entry_count; i++) {
-            first_chunk[i]               = fc[i];
-            samples_per_chunk[i]         = spc[i];
-            samples_description_index[i] = sdi[i];
-        }
-    }
-};
-
-class Stsz : public Box {
-public:
-    uint32_t sample_size = 0;
-    uint32_t sample_count;
-    std::vector<uint32_t> entry_size;
-
-    void setSampleSize(uint32_t sizes[]) {
-        if (sample_size == 0) {
-            entry_size.resize(sample_count);
-            for (uint32_t i=0; i<sample_count; i++) {
-                entry_size[i] = sizes[i];
-            }
-        }
-    }
-    
-};
 
 
 

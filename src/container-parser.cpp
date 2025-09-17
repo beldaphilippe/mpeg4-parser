@@ -19,49 +19,35 @@
 #include <type_traits>
 
 
-// BoxType boxTypeFromString(const std::string& a_code) {
-//     if (a_code == "root") return BoxType::Root; 
-//     if (a_code == "ftyp") return BoxType::Ftyp;
-//     if (a_code == "mdat") return BoxType::Mdat;
-//     if (a_code == "free") return BoxType::Free;
-//     if (a_code == "pdin") return BoxType::Pdin;
-//     if (a_code == "moov") return BoxType::Moov;
-//     if (a_code == "mvhd") return BoxType::Mvhd;
-//     if (a_code == "trak") return BoxType::Trak;
-//     if (a_code == "tkhd") return BoxType::Tkhd;
-//     std::cout << a_code << std::endl;
-//     return BoxType::Unknown;
+// std::string boxTypeToString(BoxType a_type) {
+//     switch (a_type) {
+//     case BoxType::Root: return "root"; 
+//     case BoxType::Ftyp: return "ftyp";
+//     case BoxType::Mdat: return "mdat";
+//     case BoxType::Free: return "free";
+//     case BoxType::Pdin: return "pdin";
+//     case BoxType::Moov: return "moov";
+//     case BoxType::Mvhd: return "mvhd";
+//     case BoxType::Trak: return "trak";
+//     case BoxType::Tkhd: return "tkhd";
+//     case BoxType::Edts: return "edts";
+//     case BoxType::Elst: return "elst";
+//     case BoxType::Mdia: return "mdia";
+//     case BoxType::Mdhd: return "mdhd";
+//     case BoxType::Hdlr: return "hdlr";
+//     case BoxType::Minf: return "minf";
+//     case BoxType::Vmhd: return "vmhd";
+//     case BoxType::Dinf: return "dinf";
+//     case BoxType::Url:  return "url ";
+//     case BoxType::Urn:  return "urn ";
+//     case BoxType::Dref: return "dref";
+//     case BoxType::Stbl: return "stbl";
+//     case BoxType::Btrt: return "btrt";
+//     case BoxType::Stsd: return "stsd";
+//     case BoxType::Meta: return "meta";
+//     default: return "unknown";
+//     }
 // }
-
-std::string boxTypeToString(BoxType a_type) {
-    switch (a_type) {
-    case BoxType::Root: return "root"; 
-    case BoxType::Ftyp: return "ftyp";
-    case BoxType::Mdat: return "mdat";
-    case BoxType::Free: return "free";
-    case BoxType::Pdin: return "pdin";
-    case BoxType::Moov: return "moov";
-    case BoxType::Mvhd: return "mvhd";
-    case BoxType::Trak: return "trak";
-    case BoxType::Tkhd: return "tkhd";
-    case BoxType::Edts: return "edts";
-    case BoxType::Elst: return "elst";
-    case BoxType::Mdia: return "mdia";
-    case BoxType::Mdhd: return "mdhd";
-    case BoxType::Hdlr: return "hdlr";
-    case BoxType::Minf: return "minf";
-    case BoxType::Vmhd: return "vmhd";
-    case BoxType::Dinf: return "dinf";
-    case BoxType::Url:  return "url ";
-    case BoxType::Urn:  return "urn ";
-    case BoxType::Dref: return "dref";
-    case BoxType::Stbl: return "stbl";
-    case BoxType::Btrt: return "btrt";
-    case BoxType::Stsd: return "stsd";
-    case BoxType::Meta: return "meta";
-    default: return "unknown";
-    }
-}
 
 template<typename T>
 void readBigEndian(std::istream& a_file, T& a_x) {
@@ -95,28 +81,9 @@ uint32_t readNullTerminatedString(std::istream& a_file, std::string& a_str) {
     return cmt;
 }
 
-// Parse le header directement à la position du stream.
-//     @file: un pointeur vers le bitstream de lecture
-//     @size: pointeur vers la taille de la boîte, à renseigner
-//     @type: chaîne de 4 charactères indiquant le type de la boîte, à renseigner 
-//     @return: l'offset à appliquer lors du parsing de la boite
-// uint parseHeader_bak(std::ifstream& a_file, uint64_t& a_size, BoxType& a_type) {
-//     char buffer[8];
-
-//     uint32_t tmp_32;
-//     readBigEndian<uint32_t>(a_file, tmp_32);
-//     a_size = tmp_32;
-
-//     a_file.read(buffer, 4);
-//     a_type = boxTypeFromString(std::string(buffer, 4));
-    
-//     if (a_size == 1) {          // cas largesize
-//         readBigEndian<uint64_t>(a_file, a_size);
-//         return 16;
-//     }
-//     return 8;
-// }
-
+// Alloue une boite du type correspondant au paramètre fourni.
+//     @type: le tyte de boite voulu
+//     @return: un pointeur possédant la boite.
 std::unique_ptr<Box> makeBoxFromString(std::string a_type) {
     if (a_type == "root") return std::make_unique<Root>();
     if (a_type == "ftyp") return std::make_unique<Ftyp>();
@@ -141,6 +108,19 @@ std::unique_ptr<Box> makeBoxFromString(std::string a_type) {
     if (a_type == "urn ") return std::make_unique<Urn>();
     if (a_type == "stsd") return std::make_unique<Stsd>();
     if (a_type == "meta") return std::make_unique<Meta>();
+    if (a_type == "avcC") return std::make_unique<Avcc>();
+    if (a_type == "stts") return std::make_unique<Stts>();
+    if (a_type == "stss") return std::make_unique<Stss>();
+    if (a_type == "stsc") return std::make_unique<Stsc>();
+    if (a_type == "stsz") return std::make_unique<Stsz>();
+    if (a_type == "stco") return std::make_unique<Stco>();
+    if (a_type == "smhd") return std::make_unique<Smhd>();
+    if (a_type == "udta") return std::make_unique<Udta>();
+    if (a_type == "ilst") return std::make_unique<Ilst>();
+
+    // boites `alias`
+    if (a_type == "avc1") return std::make_unique<Icpv>();
+    if (a_type == "mp4a") return std::make_unique<Enca>();
     
         //     pChildBox = new Mdat;
         // } else if (type =="avc1")) {
@@ -163,24 +143,34 @@ std::unique_ptr<Box> makeBoxFromString(std::string a_type) {
 // Parse le header directement à la position du stream.
 //     @file: un pointeur vers le bitstream de lecture
 //     @return: la boite du type lu
-std::unique_ptr<Box> parseHeader(std::ifstream& a_file) {
-    char buffer[4];
-    
+std::unique_ptr<Box> parseHeader(std::ifstream& a_file) {    
     // size
     uint32_t size;
     readBigEndian<uint32_t>(a_file, size);
 
     // type
-    a_file.read(buffer, 4);
+    std::array<char, 4> type;
+    a_file.read(type.data(), 4);
     std::unique_ptr<Box> box;
     try { // debug
-        box = makeBoxFromString(std::string(buffer, 4));
+        box = makeBoxFromString(std::string(type.data(), 4));
     } catch (std::runtime_error e) {
         std::cout << "Error: " << e.what() << std::endl
+                  << "size: "  << size << '\n' 
                   << "pos: "   << std::hex << a_file.tellg() << std::endl;
         throw;
     }
+
     
+    std::vector<std::array<char, 4>> types_to_transform = {
+        {'a', 'v', 'c', '1'}
+    };
+    for (uint8_t i=0; i<types_to_transform.size(); i++) {
+        if (types_to_transform[i] == type) {
+            dynamic_cast<Icpv*>(box.get())->transformed_type = type;
+            break;
+        }
+    }
     box->size = size;
 
     // largesize
@@ -223,36 +213,36 @@ void parseBox(std::ifstream& a_file, Box& a_box) {
     }
 }
 
-void Box::setParent(Box* a_parent, const BoxType a_expected_parent_type) {
+void Box::setParent(Box* a_parent, const std::array<char, 4> a_expected_parent_type) {
     if (a_parent->type == a_expected_parent_type) {
         m_parent = a_parent;
     } else {
-        char err_msg[50];
-        std::sprintf(err_msg, "`%s` box parent should be `%s`, not `%s`",
-                     boxTypeToString(type).c_str(),
-                     boxTypeToString(a_expected_parent_type).c_str(),
-                     boxTypeToString(a_parent->type).c_str());
-        throw std::runtime_error(err_msg);
+        std::ostringstream errs;
+        errs << '`' << std::string(type.data(), 4)
+             << "` box parent should be `"
+             << std::string(a_expected_parent_type.data(), 4) << "`, not `"
+             << std::string(a_parent->type.data(), 4) << '`';
+        throw std::runtime_error(errs.str());
     }
 }
-void Box::setParent(Box* a_parent, const std::vector<BoxType> a_expected_parent_type) {
-    BoxType parent_type = a_parent->type;
+void Box::setParent(Box* a_parent, const std::vector<std::array<char, 4>> a_expected_parent_type) {
+    std::array<char, 4> parent_type = a_parent->type;
     for (auto expected_type : a_expected_parent_type) {
         if ( parent_type == expected_type) {
             m_parent = a_parent;
             return;
         } 
     }
-    char err_msg[50];
-    std::sprintf(err_msg, "`%s` box parent should not be `%s`",
-                 boxTypeToString(type).c_str(),
-                 boxTypeToString(a_parent->type).c_str());
-    throw std::runtime_error(err_msg);
+    std::ostringstream errs;
+    errs << '`' << std::string(type.data(), 4)
+         << "` box parent should not be `" 
+         << std::string(a_parent->type.data(), 4) << '`';
+    throw std::runtime_error(errs.str());
 }
 
 void Box::print(std::ostream& a_outstream) { 
     a_outstream << "type: "
-                << boxTypeToString(type)
+                << std::string(type.data(), 4)
                 << "\nsize: "
                 << size
                 << std::endl;
@@ -320,7 +310,7 @@ void Ftyp::print(std::ostream& a_outstream) {
     a_outstream << std::endl;
 }
 void Ftyp::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Root);
+    Box::setParent(a_parent, {'r', 'o', 'o', 't'});
 }
 
 void Mdat::parse(std::ifstream& a_file) {
@@ -338,7 +328,7 @@ void Mdat::print(std::ostream& a_outstream) {
                 << std::endl;
 }
 void Mdat::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Root);
+    Box::setParent(a_parent, {'r', 'o', 'o', 't'});
 }
 
 void Free::parse(std::ifstream& a_file) {
@@ -372,14 +362,14 @@ void Pdin::print(std::ostream& a_outstream) {
     a_outstream << std::endl;
 }
 void Pdin::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Root);
+    Box::setParent(a_parent, {'r', 'o', 'o', 't'});
 }
 
 void Moov::parse(std::ifstream& a_file) {
     parseBox(a_file, *this);
 }
 void Moov::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Root);
+    Box::setParent(a_parent, {'r', 'o', 'o', 't'});
 }
 
 void Mvhd::parse(std::ifstream& a_file) {
@@ -447,14 +437,14 @@ void Mvhd::print(std::ostream& a_outstream) {
                 << std::endl;
 }
 void Mvhd::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Moov );
+    Box::setParent(a_parent, {'m', 'o', 'o', 'v'});
 }
 
 void Trak::parse(std::ifstream& a_file) {
     parseBox(a_file, *this);
 }
 void Trak::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Moov);
+    Box::setParent(a_parent, {'m', 'o', 'o', 'v'});
 }
 
 void Tkhd::parse(std::ifstream& a_file) {
@@ -530,14 +520,14 @@ void Tkhd::print(std::ostream& a_outstream) {
                 << std::endl;
 }
 void Tkhd::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Trak);
+    Box::setParent(a_parent, {'t', 'r', 'a', 'k'});
 }
 
 void Edts::parse(std::ifstream& a_file) {
     parseBox(a_file, *this);
 }
 void Edts::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Trak);
+    Box::setParent(a_parent, {'t', 'r', 'a', 'k'});
 }
 
 void Elst::parse(std::ifstream& a_file) {
@@ -597,14 +587,14 @@ void Elst::print(std::ostream& a_outstream) {
     a_outstream << '\n';
 }
 void Elst::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Edts);
+    Box::setParent(a_parent, {'e', 'd', 't', 's'});
 }
 
 void Mdia::parse(std::ifstream& a_file) {
     parseBox(a_file, *this);
 }
 void Mdia::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Trak);
+    Box::setParent(a_parent, {'t', 'r', 'a', 'k'});
 }
 
 void Mdhd::parse(std::ifstream& a_file) {
@@ -651,7 +641,7 @@ void Mdhd::print(std::ostream& a_outstream) {
                 << "language: " << language << '\n';
 }
 void Mdhd::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Mdia);
+    Box::setParent(a_parent, {'m', 'd', 'i', 'a'});
 }
 
 void Hdlr::parse(std::ifstream& a_file) {
@@ -677,14 +667,14 @@ void Hdlr::print(std::ostream& a_outstream) {
                 << "name: "         << name         << '\n';
 }
 void Hdlr::setParent(Box* a_parent) {
-    Box::setParent(a_parent, std::vector<BoxType> {{BoxType::Mdia, BoxType::Meta}});
+    Box::setParent(a_parent, {{'m', 'd', 'i', 'a'}, {'m', 'e', 't', 'a'} });
 }
 
 void Minf::parse(std::ifstream& a_file) {
     parseBox(a_file, *this);
 }
 void Minf::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Mdia);
+    Box::setParent(a_parent, {'m', 'd', 'i', 'a'});
 }
 
 void Vmhd::parse(std::ifstream& a_file) {
@@ -705,14 +695,14 @@ void Vmhd::print(std::ostream& a_outstream) {
                                      << opcolor[2]   << '\n';
 }
 void Vmhd::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Minf);
+    Box::setParent(a_parent, {'m', 'i', 'n', 'f'});
 }
 
 void Dinf::parse(std::ifstream& a_file) {
     parseBox(a_file, *this);
 }
 void Dinf::setParent(Box* a_parent) {
-    Box::setParent(a_parent, {BoxType::Minf, BoxType::Meta});
+    Box::setParent(a_parent, {{'m', 'i', 'n', 'f'}, {'m', 'e', 't', 'a'}});
 }
 
 void Url::parse(std::ifstream& a_file) {
@@ -728,7 +718,7 @@ void Url::print(std::ostream& a_outstream) {
     a_outstream << "location: " << location << '\n';
 }
 void Url::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Dref);
+    Box::setParent(a_parent, {'d', 'r', 'e', 'f'});
 }
 
 void Urn::parse(std::ifstream& a_file) {
@@ -747,7 +737,7 @@ void Urn::print(std::ostream& a_outstream) {
                 <<"location: " << location << '\n';
 }
 void Urn::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Dref);
+    Box::setParent(a_parent, {'d', 'r', 'e', 'f'});
 }
 
 void Dref::parse(std::ifstream& a_file) {
@@ -764,14 +754,14 @@ void Dref::print(std::ostream& a_outstream) {
     a_outstream << "entry count: " << entry_count << '\n';
 }
 void Dref::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Dinf);
+    Box::setParent(a_parent, {'d', 'i', 'n', 'f'});
 }
 
 void Stbl::parse(std::ifstream& a_file) {
     parseBox(a_file, *this);
 }
 void Stbl::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Minf);
+    Box::setParent(a_parent, {'m', 'i', 'n', 'f'});
 }
 
 void SampleEntry::parse(std::ifstream& a_file) {
@@ -801,7 +791,7 @@ void Btrt::print(std::ostream& a_outstream) {
                 << "avgBitrate: "   << avgBitrate   << '\n';
 }
 void Btrt::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Minf);
+    Box::setParent(a_parent, {'m', 'i', 'n', 'f'});
 }
 
 void Stsd::parse(std::ifstream& a_file) {
@@ -818,7 +808,7 @@ void Stsd::print(std::ostream& a_outstream) {
     a_outstream << "entry count: " << entry_count << '\n';
 }
 void Stsd::setParent(Box* a_parent) {
-    Box::setParent(a_parent, BoxType::Stbl);
+    Box::setParent(a_parent, {'s', 't', 'b', 'l'});
 }
 
 void Meta::parse(std::ifstream& a_file) {
@@ -826,9 +816,306 @@ void Meta::parse(std::ifstream& a_file) {
     parseBox(a_file, *this);
 }
 void Meta::setParent(Box *a_parent) {
-    Box::setParent(a_parent, std::vector<BoxType> {{BoxType::Moov, BoxType::Trak}});
+    Box::setParent(a_parent, {{'m', 'o', 'o', 'v'}, {'t', 'r', 'a', 'k'}, {'u', 'd', 't', 'a'}});
 }
 
+void Frma::parse(std::ifstream& a_file) {
+    m_beg_data = a_file.tellg();
+    if (size == 0) {           // on lit jusqu'à la fin du fichier
+        a_file.seekg(0, a_file.end);
+    } else {
+        a_file.seekg((uint64_t) a_file.tellg() + size - m_parse_offset);
+    }
+}
+void Frma::print(std::ostream& a_outstream) {
+    Box::print(a_outstream);
+    a_outstream << "data_format: " << std::string(data_format.data()) << '\n'
+                << "beginning of data: " << m_beg_data << '\n';
+}
+void Frma::setParent(Box *a_parent) {
+    Box::setParent(a_parent, {'c', 'i', 'n', 'f'});
+}
+
+void Cinf::parse(std::ifstream& a_file) {
+    // original_format
+    parseBox(a_file, *this);
+}
+void Cinf::setParent(Box *a_parent) {
+    Box::setParent(a_parent, {'s', 't', 's', 'd'});
+}
+
+void Avcc::parse(std::ifstream& a_file) {
+    beg_data = a_file.tellg();
+    if (size == 0) {           // on lit jusqu'à la fin du fichier
+        a_file.seekg(0, a_file.end);
+    } else {
+        a_file.seekg((uint64_t) a_file.tellg() + size - m_parse_offset);
+    }
+}
+void Avcc::setParent(Box *a_parent) {
+    Box::setParent(a_parent, {'i', 'c', 'p', 'v'});
+}
+
+void VisualSampleEntry::parse(std::ifstream& a_file) {
+    SampleEntry::parse(a_file);
+    
+    // pre_defined (2 octets)
+    a_file.seekg( (uint64_t) a_file.tellg() + 2);
+    // reserved (2 octets)
+    a_file.seekg( (uint64_t) a_file.tellg() + 2);
+    // pre_defined (4 octets)[3]
+    a_file.seekg( (uint64_t) a_file.tellg() + 12);
+    // width
+    readBigEndian<uint16_t>(a_file, width);
+    // height
+    readBigEndian<uint16_t>(a_file, height);
+    // horizresolution
+    readBigEndian<uint32_t>(a_file, horizresolution);
+    // vertresolution
+    readBigEndian<uint32_t>(a_file, vertresolution);
+    // reserved (4 octets)
+    a_file.seekg( (uint64_t) a_file.tellg() + 4);
+    // frame_count
+    readBigEndian<uint16_t>(a_file, frame_count);
+    // compressorname
+    a_file.read(compressorname.data(), 32);
+    // depth
+    readBigEndian<uint16_t>(a_file, depth);
+    // pre_defined (2 octets)
+    a_file.seekg( (uint64_t) a_file.tellg() + 2);
+
+    m_parse_offset += 70;
+};
+void VisualSampleEntry::print(std::ostream& a_outstream){
+    SampleEntry::print(a_outstream);
+
+    a_outstream << "width: "           << width           << '\n'
+                << "height: "          << height          << '\n'
+                << "horizresolution: " << horizresolution << '\n'
+                << "vertresolution: "  << vertresolution  << '\n'
+                << "frame_count: "     << frame_count     << '\n'
+                << "compressorname: "  << compressorname  << '\n'
+                << "depth: "           << depth           << '\n';
+};
+
+void Icpv::parse(std::ifstream& a_file) {
+    VisualSampleEntry::parse(a_file);
+    
+    parseBox(a_file, *this);
+}
+void Icpv::print(std::ostream& a_outstream) {
+    VisualSampleEntry::print(a_outstream);
+}
+void Icpv::setParent(Box *a_parent) {
+    Box::setParent(a_parent, {'s', 't', 's', 'd'});
+}
+
+void Stts::parse(std::ifstream& a_file) {
+    FullBox::parse(a_file);
+
+    // entry count
+    readBigEndian<uint32_t>(a_file, entry_count);
+    
+    uint32_t buffer;
+    for (uint32_t i=0; i<entry_count; i++) {
+        // sample count
+        readBigEndian<uint32_t>(a_file, buffer);
+        sample_count.push_back(buffer);
+        // sample delta
+        readBigEndian<uint32_t>(a_file, buffer);
+        sample_delta.push_back(buffer);
+    }
+}
+void Stts::print(std::ostream& a_outstream) {
+    FullBox::print(a_outstream);
+    a_outstream << "entry count: " << entry_count << std::endl
+                << "sample count: ";
+    for (uint32_t i=0; i<entry_count; i++) {
+        a_outstream << sample_count[i] << ' ';
+    }
+    a_outstream << "\nsample delta: ";
+    for (uint32_t i=0; i<entry_count; i++) {
+        a_outstream << sample_delta[i] << ' ';
+    }
+    a_outstream << '\n';
+}
+void Stts::setParent(Box *a_parent) {
+    Box::setParent(a_parent, {'s', 't', 'b', 'l'});
+}
+
+void Stss::parse(std::ifstream& a_file) {
+    FullBox::parse(a_file);
+
+    // entry count
+    readBigEndian<uint32_t>(a_file, entry_count);
+    
+    uint32_t buffer;
+    for (uint32_t i=0; i<entry_count; i++) {
+        // sample_number
+        readBigEndian<uint32_t>(a_file, buffer);
+        sample_number.push_back(buffer);
+    }
+}
+void Stss::print(std::ostream& a_outstream) {
+    FullBox::print(a_outstream);
+    a_outstream << "entry count: " << entry_count << std::endl
+                << "sample number: ";
+    for (uint32_t i=0; i<entry_count; i++) {
+        a_outstream << sample_number[i] << ' ';
+    }
+    a_outstream << '\n';
+}
+void Stss::setParent(Box *a_parent) {
+    Box::setParent(a_parent, {'s', 't', 'b', 'l'});
+}
+
+void Stsc::parse(std::ifstream& a_file) {
+    FullBox::parse(a_file);
+
+    // entry count
+    readBigEndian<uint32_t>(a_file, entry_count);
+    
+    uint32_t buffer;
+    for (uint32_t i=0; i<entry_count; i++) {
+        // first_chunk
+        readBigEndian<uint32_t>(a_file, buffer);
+        first_chunk.push_back(buffer);
+        // samples_per_chunk
+        readBigEndian<uint32_t>(a_file, buffer);
+        samples_per_chunk.push_back(buffer);
+        // samples_description_entry
+        readBigEndian<uint32_t>(a_file, buffer);
+        samples_description_index.push_back(buffer);
+    }
+}
+void Stsc::print(std::ostream& a_outstream) {
+    FullBox::print(a_outstream);
+    a_outstream << "entry count: " << entry_count << std::endl
+                << "first chunk: ";
+    for (uint32_t i=0; i<entry_count; i++) {
+        a_outstream << first_chunk[i] << ' ';
+    }
+    a_outstream << "\nsamples per chunk: ";
+    for (uint32_t i=0; i<entry_count; i++) {
+        a_outstream << samples_per_chunk[i] << ' ';
+    }
+    a_outstream << "\nsamples description index: ";
+    for (uint32_t i=0; i<entry_count; i++) {
+        a_outstream << samples_description_index[i] << ' ';
+    }
+    a_outstream << '\n';
+}
+void Stsc::setParent(Box *a_parent) {
+    Box::setParent(a_parent, {'s', 't', 'b', 'l'});
+}
+
+void Stsz::parse(std::ifstream& a_file) {
+    FullBox::parse(a_file);
+
+    // sample_size
+    readBigEndian<uint32_t>(a_file, sample_size);
+    
+    // sample_count
+    readBigEndian<uint32_t>(a_file, sample_count);
+
+    if (sample_size == 0) {
+        uint32_t buffer;
+        for (uint32_t i=0; i<sample_count; i++) {
+            // entry_size
+            readBigEndian<uint32_t>(a_file, buffer);
+            entry_size.push_back(buffer);
+        }
+    }
+}
+void Stsz::print(std::ostream& a_outstream) {
+    FullBox::print(a_outstream);
+    a_outstream << "sample size: "  << sample_size  << '\n'
+                << "sample count: " << sample_count << '\n';
+    if (sample_size == 0) {
+        a_outstream << "entry_size: ";
+        for (uint32_t i=0; i<sample_count; i++) {
+            a_outstream << entry_size[i] << ' ';
+        }
+    a_outstream << "\n";
+    }
+}
+void Stsz::setParent(Box *a_parent) {
+    Box::setParent(a_parent, {'s', 't', 'b', 'l'});
+}
+
+void Stco::parse(std::ifstream& a_file) {
+    FullBox::parse(a_file);
+
+    // entry count
+    readBigEndian<uint32_t>(a_file, entry_count);
+    
+    uint32_t buffer;
+    for (uint32_t i=0; i<entry_count; i++) {
+        // chunk_offset
+        readBigEndian<uint32_t>(a_file, buffer);
+        chunk_offset.push_back(buffer);
+    }
+}
+void Stco::print(std::ostream& a_outstream) {
+    FullBox::print(a_outstream);
+    a_outstream << "entry count: " << entry_count << std::endl
+                << "chunk offset: ";
+    for (uint32_t i=0; i<entry_count; i++) {
+        a_outstream << chunk_offset[i] << ' ';
+    }
+    a_outstream << '\n';
+}
+void Stco::setParent(Box *a_parent) {
+    Box::setParent(a_parent, {'s', 't', 'b', 'l'});
+}
+
+void Smhd::parse(std::ifstream& a_file) {
+    FullBox::parse(a_file);
+
+    // balance
+    readBigEndian<int16_t>(a_file, balance);
+    
+    // reserved (2 octets)
+    a_file.seekg( (uint64_t) a_file.tellg() + 2);
+}
+void Smhd::print(std::ostream& a_outstream) {
+    FullBox::print(a_outstream);
+    a_outstream << "balance: " << balance << '\n';
+}
+void Smhd::setParent(Box *a_parent) {
+    Box::setParent(a_parent, {'m', 'i', 'n', 'f'});
+}
+
+void Enca::parse(std::ifstream& a_file) {
+    beg_data = a_file.tellg();
+    if (size == 0) {           // on lit jusqu'à la fin du fichier
+        a_file.seekg(0, a_file.end);
+    } else {
+        a_file.seekg((uint64_t) a_file.tellg() + size - m_parse_offset);
+    }
+}
+void Enca::setParent(Box *a_parent) {
+    Box::setParent(a_parent, {'s', 't', 's', 'd'});
+}
+
+void Udta::parse(std::ifstream& a_file) {
+    parseBox(a_file, *this);
+}
+void Udta::setParent(Box* a_parent) {
+    Box::setParent(a_parent, {{'m', 'o', 'o', 'v'}, {'t', 'r', 'a', 'k'}});
+}
+
+void Ilst::parse(std::ifstream& a_file) {
+    beg_data = a_file.tellg();
+    if (size == 0) {           // on lit jusqu'à la fin du fichier
+        a_file.seekg(0, a_file.end);
+    } else {
+        a_file.seekg((uint64_t) a_file.tellg() + size - m_parse_offset);
+    }
+}
+void Ilst::setParent(Box *a_parent) {
+    Box::setParent(a_parent, {'m', 'e', 't', 'a'});
+}
 
 void displayFileTree(Box* pRoot, const std::string fileName) {
     std::vector<TreeBoxDisplay> queue;
@@ -853,9 +1140,9 @@ void displayFileTree(Box* pRoot, const std::string fileName) {
             std::cout << "│   ";
         }
         std::cout << "└───"
-                  << boxTypeToString(current.pBox->type)
+                  << std::string(current.pBox->type.data(), 4)
                   << std::endl;
-        current.pBox->print(std::cout);
+        // current.pBox->print(std::cout); // debug
     }
     std::cout << std::endl;
 }

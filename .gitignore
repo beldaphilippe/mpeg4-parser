@@ -1,1 +1,5 @@
 build
+doc
+
+test/**
+!test/big_buck_bunny_240p_1mb.mp4
